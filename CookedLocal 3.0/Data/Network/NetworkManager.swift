@@ -137,6 +137,26 @@ final class NetworkManager {
         return try handleResponse(data: data, response: response)
     }
 
+    // MARK: - GET Request with Query Items
+
+    func request<T: Decodable>(
+        path: String,
+        queryItems: [URLQueryItem],
+        requiresAuth: Bool = true
+    ) async throws -> T {
+        let url = try buildURL(path: path, queryItems: queryItems)
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "GET"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if requiresAuth, let token = TokenManager.shared.getToken() {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, response) = try await session.data(for: urlRequest)
+        return try handleResponse(data: data, response: response)
+    }
+
     // MARK: - Paginated Request
 
     func requestPaginated<T: Decodable>(
@@ -255,8 +275,22 @@ final class NetworkManager {
             mimeType: mimeType
         )
 
+        #if DEBUG
+        let fieldLog = fields.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+        print("[Multipart] \(method) \(path) — Fields: \(fieldLog)")
+        if let fileData = fileData {
+            print("[Multipart] Attaching file: \(fileName) (\(mimeType), \(fileData.count) bytes)")
+        } else {
+            print("[Multipart] No file attached")
+        }
+        #endif
+
         let (data, response) = try await session.data(for: urlRequest)
         try validateResponse(data: data, response: response)
+
+        if let apiStatus = try? JSONDecoder().decode(APIErrorResponse.self, from: data), !apiStatus.success {
+            throw APIError.serverError(apiStatus.message ?? "Request failed")
+        }
     }
 
     // MARK: - Void Request (no response body needed)

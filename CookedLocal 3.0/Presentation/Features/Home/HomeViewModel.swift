@@ -25,6 +25,7 @@ final class HomeViewModel: ObservableObject {
     @Published private(set) var cartItemCount: Int = 0
     @Published private(set) var userName: String = "Welcome"
     @Published private(set) var userProfileURL: String?
+    @Published private(set) var profileLocation: String?
 
     // MARK: - User Role
     var isChef: Bool {
@@ -75,18 +76,8 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Public Methods
 
     func selectCategory(_ category: FoodCategory) {
-        if selectedCategory?.id == category.id {
-            // Tap same category again → deselect and show all
-            selectedCategory = nil
-            currentCategoryName = nil
-            foodCurrentPage = 1
-            Task { await loadMenus(categoryName: nil, page: 1, append: false) }
-        } else {
-            selectedCategory = category
-            currentCategoryName = category.name
-            foodCurrentPage = 1
-            Task { await loadMenus(categoryName: category.name, page: 1, append: false) }
-        }
+        categoryViewModel.selectCategory(category)
+        selectedTab = .categories
     }
 
     func addFoodItem(_ item: FoodItem, size: FoodSize = .medium) {
@@ -150,17 +141,22 @@ final class HomeViewModel: ObservableObject {
 
     private func setupSessionObserver() {
         if let user = SessionManager.shared.currentUser {
-            userName = user.name
+            userName = Self.welcomeName(from: user.name)
             userProfileURL = user.profileUrl
         }
         SessionManager.shared.$currentUser
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] user in
-                self?.userName = user.name
+                self?.userName = Self.welcomeName(from: user.name)
                 self?.userProfileURL = user.profileUrl
             }
             .store(in: &cancellables)
+    }
+
+    private static func welcomeName(from fullName: String) -> String {
+        let firstName = fullName.split(separator: " ").first.map(String.init) ?? fullName
+        return "Welcome \(firstName)"
     }
 
     @MainActor
@@ -170,12 +166,24 @@ final class HomeViewModel: ObservableObject {
         foodCurrentPage = 1
         chefsCurrentPage = 1
 
-        async let categoriesTask = loadCategories()
-        async let chefsTask = loadChefs(page: 1, append: false)
+        async let categoriesTask: () = loadCategories()
+        async let chefsTask: () = loadChefs(page: 1, append: false)
+        async let profileTask: () = loadProfile()
         await categoriesTask
         await chefsTask
+        await profileTask
 
         isLoading = false
+    }
+
+    @MainActor
+    private func loadProfile() async {
+        do {
+            let profile = try await userService.fetchMyProfile()
+            profileLocation = profile.shop?.location
+        } catch {
+            // Keep existing location
+        }
     }
 
     @MainActor

@@ -23,12 +23,11 @@ final class ChefHomeViewModel: ObservableObject {
 
     // MARK: - User Info
     var userName: String {
-        let user = SessionManager.shared.currentUser
-        if let shopName = user?.shopName, !shopName.isEmpty {
-            return shopName
-        }
-        return user?.name ?? "Welcome"
+        let fullName = SessionManager.shared.currentUser?.name ?? ""
+        let firstName = fullName.split(separator: " ").first.map(String.init) ?? fullName
+        return firstName.isEmpty ? "Welcome" : "Welcome \(firstName)"
     }
+    @Published var profileLocation: String?
     let locationManager = LocationManager.shared
 
     // MARK: - Order Stats (from dashboard)
@@ -97,6 +96,13 @@ final class ChefHomeViewModel: ObservableObject {
         Task { await loadDashboard() }
     }
 
+    @MainActor
+    func refreshFoodItemsAsync() async {
+        currentPage = 1
+        await loadMenus(categoryName: currentCategoryName, page: 1, append: false)
+        await loadDashboard()
+    }
+
     func navigateToNotifications() {
         router.navigate(to: .notifications)
     }
@@ -128,11 +134,23 @@ final class ChefHomeViewModel: ObservableObject {
     @MainActor
     private func loadData() async {
         isLoading = true
-        async let categoriesTask = loadCategories()
-        async let dashboardTask = loadDashboard()
+        async let categoriesTask: () = loadCategories()
+        async let dashboardTask: () = loadDashboard()
+        async let profileTask: () = loadProfile()
         await categoriesTask
         await dashboardTask
+        await profileTask
         isLoading = false
+    }
+
+    @MainActor
+    private func loadProfile() async {
+        do {
+            let profile = try await userService.fetchMyProfile()
+            profileLocation = profile.shop?.location
+        } catch {
+            // Keep existing location
+        }
     }
 
     @MainActor

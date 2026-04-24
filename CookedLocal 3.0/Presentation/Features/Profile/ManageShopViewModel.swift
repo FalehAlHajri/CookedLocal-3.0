@@ -17,6 +17,8 @@ final class ManageShopViewModel: ObservableObject {
     @Published var instagramURL: String = ""
     @Published var whatsappNumber: String = ""
     @Published var profileImageURL: String?
+    @Published var bannerImageURL: String?
+    @Published var qualificationURL: String?
     @Published var selectedProfileImage: UIImage?
     @Published var selectedBannerImage: UIImage?
     @Published var selectedQualificationData: Data?
@@ -67,15 +69,24 @@ final class ManageShopViewModel: ObservableObject {
             )
             successMessage = "Shop details updated successfully!"
             profileImageURL = profile.profile_url
+            bannerImageURL = profile.shop?.shop_banner
+            qualificationURL = profile.shop?.qualification
 
             // Update session
             if let user = SessionManager.shared.currentUser {
-                var updated = user
-                if let url = profile.profile_url {
-                    updated = SessionUser(id: user.id, name: shopName.isEmpty ? user.name : shopName, email: user.email, role: user.role, profileUrl: url)
-                }
+                let updated = SessionUser(
+                    id: user.id,
+                    name: shopName.isEmpty ? user.name : shopName,
+                    email: user.email,
+                    role: user.role,
+                    profileUrl: profile.profile_url,
+                    shopName: shopName.isEmpty ? user.shopName : shopName
+                )
                 SessionManager.shared.updateUser(updated)
             }
+
+            // Refresh profile from server
+            await loadProfile()
         } catch let apiError as APIError {
             errorMessage = apiError.errorDescription
         } catch {
@@ -105,6 +116,11 @@ final class ManageShopViewModel: ObservableObject {
             instagramURL = profile.social_info?.instagram_url ?? ""
             whatsappNumber = profile.social_info?.whatsapp_number ?? ""
             profileImageURL = profile.profile_url
+            bannerImageURL = profile.shop?.shop_banner
+            qualificationURL = profile.shop?.qualification
+            if qualificationFileName == nil, let url = profile.shop?.qualification, let fileName = URL(string: url)?.lastPathComponent {
+                qualificationFileName = fileName
+            }
         } catch {
             print("[ManageShopViewModel] loadProfile error: \(error)")
         }

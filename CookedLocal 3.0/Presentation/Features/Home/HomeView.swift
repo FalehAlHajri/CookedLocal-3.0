@@ -85,6 +85,14 @@ struct HomeView: View {
                             Text(viewModel.locationManager.locationString)
                                 .font(.system(size: DesignTokens.FontSize.caption))
                                 .foregroundColor(.white.opacity(0.8))
+                        } else if let location = viewModel.profileLocation, !location.isEmpty {
+                            Text(location)
+                                .font(.system(size: DesignTokens.FontSize.caption))
+                                .foregroundColor(.white.opacity(0.8))
+                        } else {
+                            Text("Location unavailable")
+                                .font(.system(size: DesignTokens.FontSize.caption))
+                                .foregroundColor(.white.opacity(0.8))
                         }
                     }
                 }

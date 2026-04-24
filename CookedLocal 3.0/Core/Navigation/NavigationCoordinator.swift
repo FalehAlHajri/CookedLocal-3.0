@@ -26,6 +26,11 @@ struct NavigationCoordinator: View {
                 }
             }
         }
+        .onOpenURL { url in
+            if url.scheme == "cookedlocal" {
+                NotificationCenter.default.post(name: .paymentDeepLink, object: url)
+            }
+        }
     }
 
     @ViewBuilder
@@ -84,8 +89,8 @@ struct NavigationCoordinator: View {
         case .confirmOrder:
             ConfirmOrderView(viewModel: container.makeConfirmOrderViewModel())
 
-        case .payment:
-            PaymentView(viewModel: container.makePaymentViewModel())
+        case .payment(let address, let note):
+            PaymentView(viewModel: container.makePaymentViewModel(address: address, note: note))
 
         case .cashOnDelivery:
             CashOnDeliveryView(viewModel: container.makeCashOnDeliveryViewModel())

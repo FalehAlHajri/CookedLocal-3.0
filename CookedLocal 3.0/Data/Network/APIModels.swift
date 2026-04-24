@@ -317,6 +317,30 @@ struct UpdateDeliveryStatusRequest: Encodable {
     let status: String
 }
 
+// MARK: - Checkout Session Models
+
+struct CreateCheckoutSessionRequest: Encodable {
+    let menu_list: [MenuOrderItemRequest]
+    let address: String
+    let note: String?
+    let success_url: String
+    let cancel_url: String
+}
+
+struct APICheckoutSession: Decodable {
+    let id: String
+    let url: String
+    let orderIds: [String]?
+    let amount: Double?
+}
+
+struct APICheckoutSessionStatus: Decodable {
+    let status: String?
+    let payment_status: String?
+    let orderIds: [String]?
+    let amount: Double?
+}
+
 // MARK: - Notification Models
 
 struct APINotificationSender: Decodable {
@@ -385,6 +409,19 @@ struct APIProviderDashboard: Decodable {
     }
 }
 
+// MARK: - URL Helpers
+
+private let baseAPIDomain = "https://api.cookedlocal.net"
+
+private func resolveImageURL(_ urlString: String?) -> String? {
+    guard let urlString = urlString, !urlString.isEmpty else { return nil }
+    if urlString.hasPrefix("http") {
+        return urlString
+    }
+    let path = urlString.hasPrefix("/") ? urlString : "/\(urlString)"
+    return "\(baseAPIDomain)\(path)"
+}
+
 // MARK: - Mappers
 
 extension APICategory {
@@ -393,7 +430,7 @@ extension APICategory {
             id: id,
             name: name,
             icon: "🍽️",
-            imageURL: thumbnail
+            imageURL: resolveImageURL(thumbnail)
         )
     }
 }
@@ -412,7 +449,7 @@ extension APIMenuItem {
             description: description ?? "",
             shopName: shop?.shop?.shop_name ?? "",
             shopImageName: "chefImage",
-            imageURL: thumbnail,
+            imageURL: resolveImageURL(thumbnail),
             shopId: shop?.id ?? "",
             categoryId: category?.id,
             sizePrices: menuSizePrices?.map { sp in
@@ -424,7 +461,7 @@ extension APIMenuItem {
                 )
             },
             isAvailable: isAvailable ?? true,
-            shopProfileURL: shop?.profile_url
+            shopProfileURL: resolveImageURL(shop?.profile_url)
         )
     }
 }
@@ -441,8 +478,8 @@ extension APIProvider {
             hasFacebook: social_info?.facebook_url != nil,
             hasInstagram: social_info?.instagram_url != nil,
             hasWhatsApp: social_info?.whatsapp_number != nil,
-            imageURL: profile_url,
-            bannerURL: shop?.shop_banner,
+            imageURL: resolveImageURL(profile_url),
+            bannerURL: resolveImageURL(shop?.shop_banner),
             bio: shop?.bio,
             shopId: id,
             socialInfo: social_info.map {

@@ -22,7 +22,7 @@ enum AppRoute: Hashable {
     case search
     case cart
     case confirmOrder
-    case payment
+    case payment(address: String, note: String?)
     case cashOnDelivery
     case shopDetail(chef: Chef)
     case foodDetail(item: FoodItem, isFromOrder: Bool = false, isFromChef: Bool = false)

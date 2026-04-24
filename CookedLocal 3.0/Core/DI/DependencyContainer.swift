@@ -148,8 +148,8 @@ final class DependencyContainer: ObservableObject {
     }
 
     @MainActor
-    func makePaymentViewModel() -> PaymentViewModel {
-        PaymentViewModel(router: router, cartManager: cartManager, orderService: orderService)
+    func makePaymentViewModel(address: String, note: String?) -> PaymentViewModel {
+        PaymentViewModel(router: router, cartManager: cartManager, orderService: orderService, address: address, note: note)
     }
 
     @MainActor

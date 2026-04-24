@@ -43,26 +43,13 @@ struct SplashView: View {
                     .scaleEffect(logoScale)
                     .opacity(logoOpacity)
 
-                // Brand Name
-                VStack(spacing: DesignTokens.Spacing.sm) {
-                    Text("COOKED")
-                        .font(.anton(48))
-                        .foregroundColor(.neutral900)
-
-                    Text("LOCAL")
-                        .font(.anton(48))
-                        .foregroundColor(.brandOrange)
-                }
-                .opacity(logoOpacity)
-
-                Spacer()
-
                 // Tagline
-                Text("Local Food, Delivered Fresh")
+                Text("Local food, Delivered Fresh.")
                     .font(.system(size: DesignTokens.FontSize.body))
                     .foregroundColor(.neutral600)
                     .opacity(logoOpacity)
-                    .padding(.bottom, DesignTokens.Spacing.xxl)
+
+                Spacer()
             }
         }
     }

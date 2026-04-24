@@ -21,14 +21,39 @@ struct PaymentView: View {
                     )
                 }
 
+                if let statusMessage = viewModel.statusMessage {
+                    HStack(spacing: DesignTokens.Spacing.xs) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.brandOrange)
+                        Text(statusMessage)
+                            .font(.system(size: 13))
+                            .foregroundColor(.brandOrange)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, DesignTokens.Spacing.sm)
+                }
+
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .font(.system(size: 13))
                         .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
                 }
 
-                PrimaryButton(title: "Next", action: { viewModel.proceed() }, isLoading: viewModel.isLoading)
-                .padding(.top, DesignTokens.Spacing.sm)
+                if case .processing = viewModel.paymentState {
+                    Button(action: { viewModel.retry() }) {
+                        Text("Retry Payment")
+                            .font(.anton(DesignTokens.FontSize.body))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, DesignTokens.Spacing.sm)
+                            .background(Color.brandOrange)
+                            .cornerRadius(DesignTokens.CornerRadius.pill)
+                    }
+                } else {
+                    PrimaryButton(title: "Next", action: { viewModel.proceed() }, isLoading: viewModel.isLoading)
+                        .padding(.top, DesignTokens.Spacing.sm)
+                }
             }
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.top, DesignTokens.Spacing.md)
@@ -99,5 +124,5 @@ struct PaymentOptionRow: View {
 }
 
 #Preview {
-    PaymentView(viewModel: PaymentViewModel(router: Router(), cartManager: CartManager(), orderService: OrderService()))
+    PaymentView(viewModel: PaymentViewModel(router: Router(), cartManager: CartManager(), orderService: OrderService(), address: "Nottingham, UK", note: nil))
 }

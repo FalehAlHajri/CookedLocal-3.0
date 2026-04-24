@@ -78,7 +78,7 @@ struct CartItemCard: View {
                 }
 
                 HStack {
-                    Text("\(cartItem.foodItem.currency) \(String(format: "%.2f", cartItem.foodItem.price))")
+                    Text("\(cartItem.foodItem.currency) \(String(format: "%.2f", cartItem.effectivePrice))")
                         .font(.anton(DesignTokens.FontSize.body))
                         .foregroundColor(.neutral900)
 

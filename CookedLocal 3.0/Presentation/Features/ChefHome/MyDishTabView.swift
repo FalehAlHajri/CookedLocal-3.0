@@ -71,6 +71,9 @@ struct MyDishTabView: View {
                     .padding(.horizontal, DesignTokens.Spacing.md)
                     .padding(.vertical, DesignTokens.Spacing.md)
                 }
+                .refreshable {
+                    await viewModel.refresh()
+                }
                 .background(Color.backgroundColor)
             }
 
@@ -89,6 +92,9 @@ struct MyDishTabView: View {
             }
         }
         .onAppear {
+            Task { await viewModel.refresh() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("menuDidChange"))) { _ in
             Task { await viewModel.refresh() }
         }
     }

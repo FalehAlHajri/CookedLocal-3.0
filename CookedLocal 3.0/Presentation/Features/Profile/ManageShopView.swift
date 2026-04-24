@@ -216,6 +216,14 @@ struct ManageShopView: View {
                             .font(.system(size: DesignTokens.FontSize.caption))
                             .foregroundColor(.neutral900)
                             .lineLimit(1)
+                    } else if let urlString = viewModel.qualificationURL, !urlString.isEmpty {
+                        Image(systemName: "doc.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.brandOrange)
+                        Text(URL(string: urlString)?.lastPathComponent ?? "Qualification")
+                            .font(.system(size: DesignTokens.FontSize.caption))
+                            .foregroundColor(.neutral900)
+                            .lineLimit(1)
                     } else {
                         Text("Upload Qualification (PDF)")
                             .font(.system(size: DesignTokens.FontSize.body))
@@ -245,6 +253,18 @@ struct ManageShopView: View {
                             .frame(height: 120)
                             .clipped()
                             .cornerRadius(DesignTokens.CornerRadius.medium)
+                    } else if let urlString = viewModel.bannerImageURL, let url = URL(string: urlString) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let img):
+                                img.resizable().aspectRatio(contentMode: .fill)
+                            default:
+                                Color.gray.opacity(0.2)
+                            }
+                        }
+                        .frame(height: 120)
+                        .clipped()
+                        .cornerRadius(DesignTokens.CornerRadius.medium)
                     } else {
                         Text("Upload Shop Banner")
                             .font(.system(size: DesignTokens.FontSize.body))

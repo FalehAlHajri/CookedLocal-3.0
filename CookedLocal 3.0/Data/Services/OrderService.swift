@@ -100,4 +100,28 @@ final class OrderService {
         let body = UpdateDeliveryStatusRequest(order_ids: orderIds, status: status)
         try await network.requestVoid(path: "order/update/delivery-status", method: "PATCH", body: body)
     }
+
+    // MARK: - Stripe Checkout
+
+    func createCheckoutSession(
+        menuList: [MenuOrderItemRequest],
+        address: String,
+        note: String?,
+        successUrl: String,
+        cancelUrl: String
+    ) async throws -> APICheckoutSession {
+        let body = CreateCheckoutSessionRequest(
+            menu_list: menuList,
+            address: address,
+            note: note,
+            success_url: successUrl,
+            cancel_url: cancelUrl
+        )
+        return try await network.request(path: "invoice/create-checkout-session", method: "POST", body: body)
+    }
+
+    func checkSessionStatus(sessionId: String) async throws -> APICheckoutSessionStatus {
+        let queryItems = [URLQueryItem(name: "session_id", value: sessionId)]
+        return try await network.request(path: "invoice/session-status", queryItems: queryItems)
+    }
 }

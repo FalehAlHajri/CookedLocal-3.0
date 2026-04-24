@@ -71,19 +71,25 @@ final class AddDishViewModel: ObservableObject {
                 errorMessage = "Please fill in all size and price fields."
                 return
             }
+            let totalQty = Int(entry.totalQuantity) ?? 20
+            let availQty = Int(entry.availableQuantity) ?? totalQty
             sizePrices.append(MenuSizePriceInput(
                 size: entry.size,
                 price: price,
-                totalQuantity: 50
+                totalQuantity: totalQty,
+                availableQuantity: availQty
             ))
+        }
+
+        guard let imageData = selectedImage?.jpegData(compressionQuality: 0.8) else {
+            errorMessage = "Failed to process image. Please try another photo."
+            return
         }
 
         isLoading = true
         errorMessage = nil
 
-        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
-
-        Task {
+        Task { @MainActor in
             do {
                 try await menuService.createMenu(
                     title: dishTitle,
@@ -93,6 +99,7 @@ final class AddDishViewModel: ObservableObject {
                     deliveryTime: deliveryTime,
                     image: imageData
                 )
+                NotificationCenter.default.post(name: Notification.Name("menuDidChange"), object: nil)
                 router.pop()
             } catch let apiError as APIError {
                 errorMessage = apiError.errorDescription

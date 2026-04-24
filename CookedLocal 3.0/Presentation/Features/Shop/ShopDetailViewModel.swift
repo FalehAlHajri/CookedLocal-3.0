@@ -16,6 +16,7 @@ final class ShopDetailViewModel: ObservableObject {
     @Published private(set) var foodItems: [FoodItem] = []
     @Published private(set) var hasMore: Bool = false
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var cartItemCount: Int = 0
 
     private var displayedCount: Int = 10
 
@@ -28,6 +29,7 @@ final class ShopDetailViewModel: ObservableObject {
     private let router: Router
     private let cartManager: CartManager
     private let menuService: MenuService
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
     init(chef: Chef, router: Router, cartManager: CartManager, menuService: MenuService, categoryService: CategoryService) {
@@ -35,6 +37,7 @@ final class ShopDetailViewModel: ObservableObject {
         self.router = router
         self.cartManager = cartManager
         self.menuService = menuService
+        setupCartObserver()
         Task { await loadData() }
     }
 
@@ -64,6 +67,10 @@ final class ShopDetailViewModel: ObservableObject {
         router.navigate(to: .foodDetail(item: item))
     }
 
+    func navigateToCart() {
+        router.navigate(to: .cart)
+    }
+
     func goBack() {
         router.pop()
     }
@@ -74,6 +81,13 @@ final class ShopDetailViewModel: ObservableObject {
     }
 
     // MARK: - Private Methods
+
+    private func setupCartObserver() {
+        cartManager.$items
+            .map { $0.reduce(0) { $0 + $1.quantity } }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$cartItemCount)
+    }
 
     @MainActor
     private func loadData() async {

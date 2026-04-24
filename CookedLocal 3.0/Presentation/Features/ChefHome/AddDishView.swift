@@ -47,11 +47,19 @@ struct AddDishView: View {
                                 options: sizeOptions
                             )
 
-                            AppTextField(
-                                placeholder: "Enter Price",
-                                text: $viewModel.sizes[index].price,
-                                keyboardType: .decimalPad
-                            )
+                            HStack(spacing: DesignTokens.Spacing.md) {
+                                AppTextField(
+                                    placeholder: "Price",
+                                    text: $viewModel.sizes[index].price,
+                                    keyboardType: .decimalPad
+                                )
+
+                                AppTextField(
+                                    placeholder: "Qty",
+                                    text: $viewModel.sizes[index].totalQuantity,
+                                    keyboardType: .numberPad
+                                )
+                            }
                         }
                     }
 

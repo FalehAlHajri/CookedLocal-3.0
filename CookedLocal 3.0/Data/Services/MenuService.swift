@@ -56,12 +56,12 @@ final class MenuService {
         deliveryTime: String,
         image: Data?
     ) async throws {
-        // Build menu_size_prices JSON
         let sizePricesArray = sizePrices.map { sp -> [String: Any] in
             return [
                 "size": sp.size.lowercased(),
                 "price": sp.price,
-                "available_quantity": sp.totalQuantity
+                "total_quantity": sp.totalQuantity,
+                "available_quantity": sp.availableQuantity
             ]
         }
         let sizePricesData = try JSONSerialization.data(withJSONObject: sizePricesArray)
@@ -78,7 +78,10 @@ final class MenuService {
             path: "menu/create",
             method: "POST",
             fields: fields,
-            fileData: image
+            fileData: image,
+            fileFieldName: "thumbnail",
+            fileName: "dish-image.jpg",
+            mimeType: "image/jpeg"
         )
     }
 
@@ -90,6 +93,7 @@ final class MenuService {
         description: String? = nil,
         categoryId: String? = nil,
         normalPrice: Double? = nil,
+        sizePrices: [MenuSizePriceInput]? = nil,
         deliveryTime: String? = nil,
         image: Data? = nil
     ) async throws {
@@ -99,12 +103,28 @@ final class MenuService {
         if let categoryId = categoryId { fields["category"] = categoryId }
         if let normalPrice = normalPrice { fields["normal_price"] = String(normalPrice) }
         if let deliveryTime = deliveryTime { fields["delivery_time"] = deliveryTime }
+        if let sizePrices = sizePrices {
+            let sizePricesArray = sizePrices.map { sp -> [String: Any] in
+                return [
+                    "size": sp.size.lowercased(),
+                    "price": sp.price,
+                    "total_quantity": sp.totalQuantity,
+                    "available_quantity": sp.availableQuantity
+                ]
+            }
+            let sizePricesData = try JSONSerialization.data(withJSONObject: sizePricesArray)
+            let sizePricesString = String(data: sizePricesData, encoding: .utf8) ?? "[]"
+            fields["menu_size_prices"] = sizePricesString
+        }
 
         try await network.requestMultipartVoid(
             path: "menu/update/\(id)",
             method: "PATCH",
             fields: fields,
-            fileData: image
+            fileData: image,
+            fileFieldName: "thumbnail",
+            fileName: "dish-image.jpg",
+            mimeType: "image/jpeg"
         )
     }
 
@@ -121,4 +141,12 @@ struct MenuSizePriceInput {
     let size: String
     let price: Double
     let totalQuantity: Int
+    let availableQuantity: Int
+
+    init(size: String, price: Double, totalQuantity: Int, availableQuantity: Int? = nil) {
+        self.size = size
+        self.price = price
+        self.totalQuantity = totalQuantity
+        self.availableQuantity = availableQuantity ?? totalQuantity
+    }
 }

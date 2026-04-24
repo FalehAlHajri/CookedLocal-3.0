@@ -45,7 +45,7 @@ final class ConfirmOrderViewModel: ObservableObject {
     }
 
     func placeOrder() {
-        router.navigate(to: .payment)
+        router.navigate(to: .payment(address: deliveryAddress, note: nil))
     }
 
     func goBack() {

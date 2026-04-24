@@ -14,6 +14,7 @@ final class SearchViewModel: ObservableObject {
     @Published private(set) var suggestions: [SearchSuggestion] = []
     @Published private(set) var foodItems: [FoodItem] = []
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var cartItemCount: Int = 0
 
     // MARK: - Dependencies
     private let router: Router
@@ -30,10 +31,7 @@ final class SearchViewModel: ObservableObject {
         self.cartManager = cartManager
         self.menuService = menuService
         self.categoryService = categoryService
-        cartManager.$items
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
+        setupCartObserver()
         Task { await loadInitialData() }
         setupSearchObserver()
     }
@@ -62,11 +60,22 @@ final class SearchViewModel: ObservableObject {
         router.navigate(to: .foodDetail(item: item))
     }
 
+    func navigateToCart() {
+        router.navigate(to: .cart)
+    }
+
     func goBack() {
         router.pop()
     }
 
     // MARK: - Private Methods
+
+    private func setupCartObserver() {
+        cartManager.$items
+            .map { $0.reduce(0) { $0 + $1.quantity } }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$cartItemCount)
+    }
 
     @MainActor
     private func loadInitialData() async {

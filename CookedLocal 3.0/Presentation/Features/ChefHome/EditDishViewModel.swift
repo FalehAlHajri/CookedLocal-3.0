@@ -43,7 +43,12 @@ final class EditDishViewModel: ObservableObject {
         // Initialize sizes from food item
         if let sizePrices = foodItem.sizePrices, !sizePrices.isEmpty {
             self.sizes = sizePrices.map {
-                DishSizeEntry(size: $0.size.capitalized, price: String(format: "%.2f", $0.price))
+                DishSizeEntry(
+                    size: $0.size.capitalized,
+                    price: String(format: "%.2f", $0.price),
+                    totalQuantity: String($0.totalQuantity),
+                    availableQuantity: String($0.availableQuantity)
+                )
             }
         } else {
             self.sizes = [DishSizeEntry(size: "Medium", price: String(format: "%.2f", foodItem.price))]
@@ -68,27 +73,40 @@ final class EditDishViewModel: ObservableObject {
             errorMessage = "Please enter a dish title."
             return
         }
-        guard let firstSize = sizes.first, let price = Double(firstSize.price) else {
-            errorMessage = "Please enter a valid price."
-            return
+
+        var sizePrices: [MenuSizePriceInput] = []
+        for entry in sizes {
+            guard !entry.size.isEmpty, let price = Double(entry.price), price > 0 else {
+                errorMessage = "Please fill in all size and price fields."
+                return
+            }
+            let totalQty = Int(entry.totalQuantity) ?? 20
+            let availQty = Int(entry.availableQuantity) ?? totalQty
+            sizePrices.append(MenuSizePriceInput(
+                size: entry.size,
+                price: price,
+                totalQuantity: totalQty,
+                availableQuantity: availQty
+            ))
         }
+
+        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
 
         isLoading = true
         errorMessage = nil
 
-        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
-
-        Task {
+        Task { @MainActor in
             do {
-                _ = try await menuService.updateMenu(
+                try await menuService.updateMenu(
                     id: foodItem.id,
                     title: dishTitle,
                     description: dishDescription,
                     categoryId: selectedCategoryId,
-                    normalPrice: price,
+                    sizePrices: sizePrices,
                     deliveryTime: deliveryTime,
                     image: imageData
                 )
+                NotificationCenter.default.post(name: Notification.Name("menuDidChange"), object: nil)
                 router.pop()
             } catch let apiError as APIError {
                 errorMessage = apiError.errorDescription
@@ -128,4 +146,6 @@ struct DishSizeEntry: Identifiable {
     let id = UUID().uuidString
     var size: String = ""
     var price: String = ""
+    var totalQuantity: String = "20"
+    var availableQuantity: String = "20"
 }

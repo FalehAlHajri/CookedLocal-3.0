@@ -77,9 +77,15 @@ struct ChefHomeView: View {
                 }
                 .padding(.bottom, DesignTokens.Spacing.lg)
             }
+            .refreshable {
+                await viewModel.refreshFoodItemsAsync()
+            }
             .background(Color.backgroundColor)
         }
         .onAppear { viewModel.refreshFoodItems() }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("menuDidChange"))) { _ in
+            viewModel.refreshFoodItems()
+        }
     }
 
     // MARK: - Header Section
@@ -99,6 +105,14 @@ struct ChefHomeView: View {
                             .foregroundColor(.white.opacity(0.8))
                     } else if !viewModel.locationManager.locationString.isEmpty {
                         Text(viewModel.locationManager.locationString)
+                            .font(.system(size: DesignTokens.FontSize.caption))
+                            .foregroundColor(.white.opacity(0.8))
+                    } else if let location = viewModel.profileLocation, !location.isEmpty {
+                        Text(location)
+                            .font(.system(size: DesignTokens.FontSize.caption))
+                            .foregroundColor(.white.opacity(0.8))
+                    } else {
+                        Text("Location unavailable")
                             .font(.system(size: DesignTokens.FontSize.caption))
                             .foregroundColor(.white.opacity(0.8))
                     }

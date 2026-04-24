@@ -58,10 +58,31 @@ struct SearchView: View {
             .padding(.vertical, DesignTokens.Spacing.sm)
             .background(Color.neutral100.opacity(0.3))
             .cornerRadius(DesignTokens.CornerRadius.medium)
+
+            cartButton
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
         .padding(.top, DesignTokens.Spacing.md)
         .padding(.bottom, DesignTokens.Spacing.sm)
+    }
+
+    private var cartButton: some View {
+        Button(action: { viewModel.navigateToCart() }) {
+            HStack(spacing: 8) {
+                Image("shoppingBagIcon")
+                    .frame(width: 24, height: 24)
+
+                Text(String(format: "%02d", viewModel.cartItemCount))
+                    .font(.anton(DesignTokens.FontSize.subheadline))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.brandOrange)
+            )
+        }
     }
 
     // MARK: - Suggestions Section

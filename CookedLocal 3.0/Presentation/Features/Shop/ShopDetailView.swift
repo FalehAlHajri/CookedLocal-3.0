@@ -59,9 +59,30 @@ struct ShopDetailView: View {
                 .foregroundColor(.neutral900)
 
             Spacer()
+
+            cartButton
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
         .padding(.vertical, DesignTokens.Spacing.md)
+    }
+
+    private var cartButton: some View {
+        Button(action: { viewModel.navigateToCart() }) {
+            HStack(spacing: 8) {
+                Image("shoppingBagIcon")
+                    .frame(width: 24, height: 24)
+
+                Text(String(format: "%02d", viewModel.cartItemCount))
+                    .font(.anton(DesignTokens.FontSize.subheadline))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.brandOrange)
+            )
+        }
     }
 
     // MARK: - Banner & Profile Section

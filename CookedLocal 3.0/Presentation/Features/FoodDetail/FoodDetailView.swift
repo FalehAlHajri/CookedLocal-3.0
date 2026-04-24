@@ -51,9 +51,32 @@ struct FoodDetailView: View {
                 .lineLimit(1)
 
             Spacer()
+
+            if !viewModel.isFromChef {
+                cartButton
+            }
         }
         .padding(.horizontal, DesignTokens.Spacing.md)
         .padding(.vertical, DesignTokens.Spacing.md)
+    }
+
+    private var cartButton: some View {
+        Button(action: { viewModel.navigateToCart() }) {
+            HStack(spacing: 8) {
+                Image("shoppingBagIcon")
+                    .frame(width: 24, height: 24)
+
+                Text(String(format: "%02d", viewModel.cartItemCount))
+                    .font(.anton(DesignTokens.FontSize.subheadline))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.brandOrange)
+            )
+        }
     }
 
     // MARK: - Food Image Section
@@ -218,11 +241,7 @@ struct FoodDetailView: View {
     }
 
     private func sizePrice(for size: FoodSize) -> Double {
-        switch size {
-        case .small: return viewModel.foodItem.price
-        case .medium: return viewModel.foodItem.price
-        case .large: return viewModel.foodItem.price * 3
-        }
+        viewModel.price(for: size)
     }
 
     // MARK: - Bottom Bar

@@ -16,10 +16,12 @@ final class CategoryViewModel: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var isLoadingMore: Bool = false
     @Published private(set) var hasMore: Bool = false
+    @Published private(set) var errorMessage: String?
+    @Published private(set) var cartItemCount: Int = 0
 
     // MARK: - Pagination
-    private var currentPage: Int = 1
-    private var currentCategoryName: String? = nil
+    var currentPage: Int = 1
+    var currentCategoryName: String? = nil
 
     // MARK: - Dependencies
     private let router: Router
@@ -34,10 +36,7 @@ final class CategoryViewModel: ObservableObject {
         self.cartManager = cartManager
         self.menuService = menuService
         self.categoryService = categoryService
-        cartManager.$items
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
+        setupCartObserver()
         Task { await loadData() }
     }
 
@@ -65,6 +64,10 @@ final class CategoryViewModel: ObservableObject {
         router.navigate(to: .foodDetail(item: item))
     }
 
+    func navigateToCart() {
+        router.navigate(to: .cart)
+    }
+
     @MainActor
     func loadMore() {
         guard hasMore && !isLoadingMore else { return }
@@ -79,16 +82,26 @@ final class CategoryViewModel: ObservableObject {
 
     // MARK: - Private Methods
 
+    private func setupCartObserver() {
+        cartManager.$items
+            .map { $0.reduce(0) { $0 + $1.quantity } }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$cartItemCount)
+    }
+
     @MainActor
     private func loadData() async {
         isLoading = true
+        errorMessage = nil
         currentPage = 1
         do {
             let apiCategories = try await categoryService.fetchCategories()
             categories = apiCategories.map { $0.toFoodCategory() }
-            selectedCategory = categories.first
+            if selectedCategory == nil {
+                selectedCategory = categories.first
+            }
         } catch {
-            // Keep empty on error
+            errorMessage = "Failed to load categories."
         }
 
         if let selected = selectedCategory {
@@ -99,7 +112,7 @@ final class CategoryViewModel: ObservableObject {
     }
 
     @MainActor
-    private func loadMenus(categoryName: String?, page: Int, append: Bool) async {
+    func loadMenus(categoryName: String?, page: Int, append: Bool) async {
         if append { isLoadingMore = true }
         defer { if append { isLoadingMore = false } }
         do {
@@ -114,7 +127,9 @@ final class CategoryViewModel: ObservableObject {
                 hasMore = newItems.count == pageSize
             }
         } catch {
-            // Keep current items on error
+            if !append {
+                errorMessage = "Failed to load menu items."
+            }
         }
     }
 }
