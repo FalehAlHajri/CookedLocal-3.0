@@ -78,7 +78,8 @@ final class MenuService {
             path: "menu/create",
             method: "POST",
             fields: fields,
-            fileData: image
+            fileData: image,
+            fileFieldName: "thumbnail"
         )
     }
 
@@ -90,6 +91,7 @@ final class MenuService {
         description: String? = nil,
         categoryId: String? = nil,
         normalPrice: Double? = nil,
+        sizePrices: [MenuSizePriceInput]? = nil,
         deliveryTime: String? = nil,
         image: Data? = nil
     ) async throws {
@@ -99,12 +101,25 @@ final class MenuService {
         if let categoryId = categoryId { fields["category"] = categoryId }
         if let normalPrice = normalPrice { fields["normal_price"] = String(normalPrice) }
         if let deliveryTime = deliveryTime { fields["delivery_time"] = deliveryTime }
+        if let sizePrices = sizePrices {
+            let sizePricesArray = sizePrices.map { sp -> [String: Any] in
+                return [
+                    "size": sp.size.lowercased(),
+                    "price": sp.price,
+                    "available_quantity": sp.totalQuantity
+                ]
+            }
+            let sizePricesData = try JSONSerialization.data(withJSONObject: sizePricesArray)
+            let sizePricesString = String(data: sizePricesData, encoding: .utf8) ?? "[]"
+            fields["menu_size_prices"] = sizePricesString
+        }
 
         try await network.requestMultipartVoid(
             path: "menu/update/\(id)",
             method: "PATCH",
             fields: fields,
-            fileData: image
+            fileData: image,
+            fileFieldName: "thumbnail"
         )
     }
 

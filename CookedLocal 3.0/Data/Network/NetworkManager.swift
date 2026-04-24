@@ -255,8 +255,22 @@ final class NetworkManager {
             mimeType: mimeType
         )
 
+        #if DEBUG
+        let fieldLog = fields.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+        print("[Multipart] \(method) \(path) — Fields: \(fieldLog)")
+        if let fileData = fileData {
+            print("[Multipart] Attaching file: \(fileName) (\(mimeType), \(fileData.count) bytes)")
+        } else {
+            print("[Multipart] No file attached")
+        }
+        #endif
+
         let (data, response) = try await session.data(for: urlRequest)
         try validateResponse(data: data, response: response)
+
+        if let apiStatus = try? JSONDecoder().decode(APIErrorResponse.self, from: data), !apiStatus.success {
+            throw APIError.serverError(apiStatus.message ?? "Request failed")
+        }
     }
 
     // MARK: - Void Request (no response body needed)

@@ -68,27 +68,37 @@ final class EditDishViewModel: ObservableObject {
             errorMessage = "Please enter a dish title."
             return
         }
-        guard let firstSize = sizes.first, let price = Double(firstSize.price) else {
-            errorMessage = "Please enter a valid price."
-            return
+
+        var sizePrices: [MenuSizePriceInput] = []
+        for entry in sizes {
+            guard !entry.size.isEmpty, let price = Double(entry.price), price > 0 else {
+                errorMessage = "Please fill in all size and price fields."
+                return
+            }
+            sizePrices.append(MenuSizePriceInput(
+                size: entry.size,
+                price: price,
+                totalQuantity: 999
+            ))
         }
+
+        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
 
         isLoading = true
         errorMessage = nil
 
-        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
-
-        Task {
+        Task { @MainActor in
             do {
-                _ = try await menuService.updateMenu(
+                try await menuService.updateMenu(
                     id: foodItem.id,
                     title: dishTitle,
                     description: dishDescription,
                     categoryId: selectedCategoryId,
-                    normalPrice: price,
+                    sizePrices: sizePrices,
                     deliveryTime: deliveryTime,
                     image: imageData
                 )
+                NotificationCenter.default.post(name: Notification.Name("menuDidChange"), object: nil)
                 router.pop()
             } catch let apiError as APIError {
                 errorMessage = apiError.errorDescription

@@ -91,6 +91,9 @@ struct MyDishTabView: View {
         .onAppear {
             Task { await viewModel.refresh() }
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("menuDidChange"))) { _ in
+            Task { await viewModel.refresh() }
+        }
     }
 
     // MARK: - Header
