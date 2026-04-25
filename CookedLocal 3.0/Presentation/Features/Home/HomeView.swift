@@ -7,6 +7,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject var viewModel: HomeViewModel
+    @EnvironmentObject var container: DependencyContainer
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,6 +17,32 @@ struct HomeView: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .navigationBarHidden(true)
+        .overlay(assistantOverlay, alignment: .bottomTrailing)
+    }
+
+    private var assistantOverlay: some View {
+        let userRole = SessionManager.shared.currentUser?.role ?? "customer"
+        let context = AssistantContext(
+            userId: SessionManager.shared.currentUser?.id,
+            currentScreen: "home",
+            cartItems: nil,
+            availableMenus: viewModel.foodItems.map { item in
+                AssistantMenuItem(
+                    menuId: item.id,
+                    title: item.name,
+                    price: item.price,
+                    category: item.categoryId
+                )
+            },
+            recentOrders: nil
+        )
+        return AssistantFloatingButton(
+            userRole: userRole,
+            currentScreen: "home",
+            context: context,
+            router: viewModel.router,
+            assistantService: container.assistantService
+        )
     }
 
     // MARK: - Tab Content

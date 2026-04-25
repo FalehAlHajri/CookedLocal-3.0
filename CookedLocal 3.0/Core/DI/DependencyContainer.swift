@@ -17,6 +17,7 @@ final class DependencyContainer: ObservableObject {
     let notificationService: NotificationService
     let userService: UserService
     let commonService: CommonService
+    let assistantService: AssistantService
 
     // MARK: - Router
     let router: Router
@@ -33,6 +34,7 @@ final class DependencyContainer: ObservableObject {
         self.notificationService = NotificationService()
         self.userService = UserService()
         self.commonService = CommonService()
+        self.assistantService = AssistantService()
         self.router = Router()
     }
 

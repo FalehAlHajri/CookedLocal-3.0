@@ -409,6 +409,67 @@ struct APIProviderDashboard: Decodable {
     }
 }
 
+// MARK: - Assistant Models
+
+struct AssistantContext: Encodable {
+    let userId: String?
+    let currentScreen: String
+    let cartItems: [AssistantCartItem]?
+    let availableMenus: [AssistantMenuItem]?
+    let recentOrders: [AssistantOrderItem]?
+}
+
+struct AssistantCartItem: Encodable {
+    let menuId: String
+    let name: String
+    let size: String
+    let quantity: Int
+    let price: Double
+}
+
+struct AssistantMenuItem: Encodable {
+    let menuId: String
+    let title: String
+    let price: Double
+    let category: String?
+}
+
+struct AssistantOrderItem: Encodable {
+    let orderId: String
+    let status: String
+    let totalPrice: Double
+    let orderedAt: String
+}
+
+struct AssistantChatRequest: Encodable {
+    let message: String
+    let role: String
+    let context: AssistantContext
+}
+
+struct AssistantSuggestedAction: Decodable, Identifiable {
+    let id = UUID()
+    let label: String
+    let route: String
+
+    enum CodingKeys: String, CodingKey {
+        case label
+        case route
+    }
+}
+
+struct AssistantChatResponse: Decodable {
+    let success: Bool
+    let message: String
+    let suggestedActions: [AssistantSuggestedAction]?
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case message
+        case suggestedActions = "suggested_actions"
+    }
+}
+
 // MARK: - URL Helpers
 
 private let baseAPIDomain = "https://api.cookedlocal.net"

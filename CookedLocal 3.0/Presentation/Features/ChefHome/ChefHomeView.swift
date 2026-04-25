@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ChefHomeView: View {
     @StateObject var viewModel: ChefHomeViewModel
+    @EnvironmentObject var container: DependencyContainer
 
     var body: some View {
         ZStack {
@@ -32,6 +33,31 @@ struct ChefHomeView: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .navigationBarHidden(true)
+        .overlay(assistantOverlay, alignment: .bottomTrailing)
+    }
+
+    private var assistantOverlay: some View {
+        let context = AssistantContext(
+            userId: SessionManager.shared.currentUser?.id,
+            currentScreen: "chefHome",
+            cartItems: nil,
+            availableMenus: viewModel.foodItems.map { item in
+                AssistantMenuItem(
+                    menuId: item.id,
+                    title: item.name,
+                    price: item.price,
+                    category: item.categoryId
+                )
+            },
+            recentOrders: nil
+        )
+        return AssistantFloatingButton(
+            userRole: "provider",
+            currentScreen: "chefHome",
+            context: context,
+            router: viewModel.router,
+            assistantService: container.assistantService
+        )
     }
 
     // MARK: - Tab Content

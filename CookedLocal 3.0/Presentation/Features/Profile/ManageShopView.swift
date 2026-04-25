@@ -9,6 +9,7 @@ import UniformTypeIdentifiers
 
 struct ManageShopView: View {
     @StateObject var viewModel: ManageShopViewModel
+    @EnvironmentObject var container: DependencyContainer
     @State private var profilePhotoItem: PhotosPickerItem?
     @State private var bannerPhotoItem: PhotosPickerItem?
     @State private var showDocumentPicker = false
@@ -53,6 +54,7 @@ struct ManageShopView: View {
         }
         .background(Color.backgroundColor)
         .navigationBarHidden(true)
+        .overlay(assistantOverlay, alignment: .bottomTrailing)
         .sheet(isPresented: $showDocumentPicker) {
             DocumentPickerView { data, fileName in
                 viewModel.selectedQualificationData = data
@@ -77,6 +79,23 @@ struct ManageShopView: View {
                 }
             }
         }
+    }
+
+    private var assistantOverlay: some View {
+        let context = AssistantContext(
+            userId: SessionManager.shared.currentUser?.id,
+            currentScreen: "manageShop",
+            cartItems: nil,
+            availableMenus: nil,
+            recentOrders: nil
+        )
+        return AssistantFloatingButton(
+            userRole: SessionManager.shared.currentUser?.role ?? "provider",
+            currentScreen: "manageShop",
+            context: context,
+            router: viewModel.router,
+            assistantService: container.assistantService
+        )
     }
 
     // MARK: - Header Section

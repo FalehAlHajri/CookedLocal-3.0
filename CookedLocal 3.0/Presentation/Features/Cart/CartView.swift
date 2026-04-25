@@ -7,6 +7,7 @@ import SwiftUI
 
 struct CartView: View {
     @StateObject var viewModel: CartViewModel
+    @EnvironmentObject var container: DependencyContainer
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,6 +23,32 @@ struct CartView: View {
         }
         .background(Color.backgroundColor)
         .navigationBarHidden(true)
+        .overlay(assistantOverlay, alignment: .bottomTrailing)
+    }
+
+    private var assistantOverlay: some View {
+        let context = AssistantContext(
+            userId: SessionManager.shared.currentUser?.id,
+            currentScreen: "cart",
+            cartItems: viewModel.cartItems.map { item in
+                AssistantCartItem(
+                    menuId: item.foodItem.id,
+                    name: item.foodItem.name,
+                    size: item.selectedSize.rawValue,
+                    quantity: item.quantity,
+                    price: item.foodItem.price
+                )
+            },
+            availableMenus: nil,
+            recentOrders: nil
+        )
+        return AssistantFloatingButton(
+            userRole: SessionManager.shared.currentUser?.role ?? "customer",
+            currentScreen: "cart",
+            context: context,
+            router: viewModel.router,
+            assistantService: container.assistantService
+        )
     }
 
     // MARK: - Header Section
