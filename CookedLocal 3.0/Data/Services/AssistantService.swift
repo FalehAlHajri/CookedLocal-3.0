@@ -14,6 +14,13 @@ final class AssistantService {
         context: AssistantContext
     ) async throws -> AssistantChatResponse {
         let body = AssistantChatRequest(message: message, role: role, context: context)
-        return try await network.request(path: "assistant/chat", method: "POST", body: body)
+        #if DEBUG
+        print("[AssistantService] POST assistant/chat — role: \(role), message: \(message)")
+        #endif
+        let response: AssistantChatResponse = try await network.request(path: "assistant/chat", method: "POST", body: body)
+        #if DEBUG
+        print("[AssistantService] response reply: \(response.reply ?? "nil"), message: \(response.message ?? "nil")")
+        #endif
+        return response
     }
 }

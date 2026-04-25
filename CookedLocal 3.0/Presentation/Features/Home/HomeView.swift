@@ -73,7 +73,7 @@ struct HomeView: View {
         .animation(.easeInOut(duration: 0.2), value: viewModel.selectedTab)
     }
 
-    // MARK: - Home Content (Categories Only)
+    // MARK: - Home Content
     private var homeContent: some View {
         VStack(spacing: 0) {
             headerSection
@@ -81,6 +81,8 @@ struct HomeView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
                     categoriesSection
+
+                    chefsSection
                 }
                 .padding(.bottom, DesignTokens.Spacing.lg)
             }
@@ -228,6 +230,70 @@ struct HomeView: View {
                 .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.categories.count)
             } else {
                 Text("No categories found")
+                    .font(.system(size: DesignTokens.FontSize.body))
+                    .foregroundColor(.neutral600)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, DesignTokens.Spacing.md)
+            }
+        }
+        .padding(.top, DesignTokens.Spacing.md)
+    }
+
+    // MARK: - Popular Chefs / Shops Section
+    private var chefsSection: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+            if viewModel.isLoading && viewModel.popularChefs.isEmpty {
+                Text("Popular Shops")
+                    .font(.anton(DesignTokens.FontSize.subheadline))
+                    .foregroundColor(.neutral900)
+                    .padding(.horizontal, DesignTokens.Spacing.md)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DesignTokens.Spacing.sm) {
+                        ForEach(0..<3, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: DesignTokens.CornerRadius.medium)
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 170, height: 200)
+                        }
+                    }
+                    .padding(.horizontal, DesignTokens.Spacing.md)
+                }
+            } else if !viewModel.popularChefs.isEmpty {
+                HStack {
+                    Text("Popular Shops")
+                        .font(.anton(DesignTokens.FontSize.subheadline))
+                        .foregroundColor(.neutral900)
+
+                    Spacer()
+
+                    if viewModel.chefsHasMore {
+                        Button(action: { viewModel.loadMoreChefs() }) {
+                            if viewModel.isLoadingMoreChefs {
+                                ProgressView().scaleEffect(0.7)
+                            } else {
+                                Text("See more")
+                                    .font(.system(size: DesignTokens.FontSize.caption))
+                                    .foregroundColor(.brandOrange)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, DesignTokens.Spacing.md)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DesignTokens.Spacing.sm) {
+                        ForEach(viewModel.popularChefs) { chef in
+                            ChefCard(
+                                chef: chef,
+                                onViewShop: { viewModel.viewChefShop(chef) }
+                            )
+                            .frame(width: 170)
+                        }
+                    }
+                    .padding(.horizontal, DesignTokens.Spacing.md)
+                }
+            } else if !viewModel.isLoading {
+                Text("No shops available right now")
                     .font(.system(size: DesignTokens.FontSize.body))
                     .foregroundColor(.neutral600)
                     .frame(maxWidth: .infinity)

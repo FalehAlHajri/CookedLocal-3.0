@@ -225,6 +225,9 @@ final class HomeViewModel: ObservableObject {
         do {
             let apiProviders = try await userService.fetchProviders(page: page, limit: pageSize)
             let newChefs = apiProviders.map { $0.toChef() }
+            #if DEBUG
+            print("[HomeViewModel] loadChefs received \(apiProviders.count) providers, mapped to \(newChefs.count) chefs")
+            #endif
             withAnimation {
                 if append {
                     popularChefs.append(contentsOf: newChefs)
@@ -234,7 +237,9 @@ final class HomeViewModel: ObservableObject {
                 chefsHasMore = newChefs.count == pageSize
             }
         } catch {
+            #if DEBUG
             print("[HomeViewModel] loadChefs error: \(error)")
+            #endif
         }
     }
 }

@@ -124,11 +124,14 @@ final class AssistantViewModel: ObservableObject {
                 let actions = response.suggestedActions ?? []
                 messages.append(ChatMessage(
                     role: .assistant,
-                    text: response.message,
+                    text: response.displayText,
                     suggestedActions: actions,
                     isError: false
                 ))
             } catch {
+                #if DEBUG
+                print("[Assistant] fetchReply error: \(error)")
+                #endif
                 messages.append(ChatMessage(
                     role: .assistant,
                     text: "Sorry, I couldn't answer that right now. Please try again.",

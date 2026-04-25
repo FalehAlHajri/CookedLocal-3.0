@@ -459,14 +459,18 @@ struct AssistantSuggestedAction: Decodable, Identifiable {
 }
 
 struct AssistantChatResponse: Decodable {
-    let success: Bool
-    let message: String
+    let reply: String?
+    let message: String?
     let suggestedActions: [AssistantSuggestedAction]?
 
     enum CodingKeys: String, CodingKey {
-        case success
+        case reply
         case message
-        case suggestedActions = "suggested_actions"
+        case suggestedActions
+    }
+
+    var displayText: String {
+        reply ?? message ?? "I'm not sure how to help with that."
     }
 }
 
