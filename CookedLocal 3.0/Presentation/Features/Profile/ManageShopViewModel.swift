@@ -28,7 +28,7 @@ final class ManageShopViewModel: ObservableObject {
     @Published private(set) var successMessage: String?
 
     // MARK: - Dependencies
-    private let router: Router
+    let router: Router
     private let userService: UserService
 
     // MARK: - Initialization

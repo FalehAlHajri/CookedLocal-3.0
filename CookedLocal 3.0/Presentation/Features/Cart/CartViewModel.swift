@@ -13,7 +13,7 @@ final class CartViewModel: ObservableObject {
     @Published private(set) var totalItems: Int = 0
 
     // MARK: - Dependencies
-    private let router: Router
+    let router: Router
     private let cartManager: CartManager
     private var cancellables = Set<AnyCancellable>()
 

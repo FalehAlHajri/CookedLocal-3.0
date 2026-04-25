@@ -41,7 +41,7 @@ final class ChefHomeViewModel: ObservableObject {
     let myProfileViewModel: MyProfileViewModel
 
     // MARK: - Dependencies
-    private let router: Router
+    let router: Router
     private let cartManager: CartManager
     private let menuService: MenuService
     private let categoryService: CategoryService
