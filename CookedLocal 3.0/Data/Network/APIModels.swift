@@ -53,6 +53,12 @@ struct ChangePasswordRequest: Encodable {
     let confirmPassword: String
 }
 
+struct AppleSignInRequest: Encodable {
+    let id_token: String
+    let full_name: String?
+    let role: String
+}
+
 // MARK: - Auth Response Models
 
 struct APIAuthUser: Decodable {

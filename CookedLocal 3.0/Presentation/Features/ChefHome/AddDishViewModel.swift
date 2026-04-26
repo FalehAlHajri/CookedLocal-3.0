@@ -125,7 +125,9 @@ final class AddDishViewModel: ObservableObject {
                 selectedCategory = first.name
             }
         } catch {
+            #if DEBUG
             print("[AddDishViewModel] loadCategories error: \(error)")
+            #endif
         }
     }
 }

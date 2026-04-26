@@ -5,6 +5,7 @@
 
 import SwiftUI
 import Combine
+import AuthenticationServices
 
 final class SignInDetailsViewModel: ObservableObject {
     @Published var emailOrPhone: String = ""
@@ -55,6 +56,33 @@ final class SignInDetailsViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
 
+        isLoading = false
+    }
+
+    @MainActor
+    func signInWithApple() async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let credentials = try await AppleSignInService.shared.signIn()
+            let fullName = credentials.fullName?.formatted()
+            let user = try await authService.signInWithApple(
+                idToken: credentials.identityToken,
+                fullName: fullName,
+                role: role
+            )
+            SessionManager.shared.saveSession(user: user, token: TokenManager.shared.getToken() ?? "")
+            let destination: AppRoute = user.userRole == .chef ? .chefHome : .home
+            router.replace(with: destination)
+        } catch let apiError as APIError {
+            errorMessage = apiError.errorDescription
+        } catch {
+            if let authError = error as? ASAuthorizationError, authError.code == .canceled {
+                // User cancelled — silently ignore
+            } else {
+                errorMessage = error.localizedDescription
+            }
+        }
         isLoading = false
     }
 

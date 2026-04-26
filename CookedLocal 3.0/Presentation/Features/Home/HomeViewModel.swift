@@ -214,7 +214,9 @@ final class HomeViewModel: ObservableObject {
                 foodHasMore = newItems.count == pageSize
             }
         } catch {
+            #if DEBUG
             print("[HomeViewModel] loadMenus error: \(error)")
+            #endif
         }
     }
 

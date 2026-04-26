@@ -122,7 +122,9 @@ final class ManageShopViewModel: ObservableObject {
                 qualificationFileName = fileName
             }
         } catch {
+            #if DEBUG
             print("[ManageShopViewModel] loadProfile error: \(error)")
+            #endif
         }
     }
 }

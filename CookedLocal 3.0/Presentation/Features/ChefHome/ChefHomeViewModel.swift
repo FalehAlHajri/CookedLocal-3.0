@@ -181,7 +181,9 @@ final class ChefHomeViewModel: ObservableObject {
                 hasMore = newItems.count == pageSize
             }
         } catch {
+            #if DEBUG
             print("[ChefHomeViewModel] loadMenus error: \(error)")
+            #endif
         }
     }
 

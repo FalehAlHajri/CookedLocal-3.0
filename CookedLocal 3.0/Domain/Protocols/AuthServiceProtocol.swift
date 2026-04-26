@@ -41,6 +41,7 @@ enum AuthError: Error, LocalizedError {
 protocol AuthServiceProtocol {
     func signUp(name: String, email: String, password: String, role: UserRole) async throws -> SessionUser
     func signIn(email: String, password: String) async throws -> SessionUser
+    func signInWithApple(idToken: String, fullName: String?, role: UserRole) async throws -> SessionUser
     func requestRegistrationOTP(email: String) async throws
     func verifyRegistrationOTP(otp: String) async throws
     func requestPasswordReset(email: String) async throws

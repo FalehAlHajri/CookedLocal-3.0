@@ -120,6 +120,32 @@ final class AuthService: AuthServiceProtocol {
         tokenManager.clearOTPEmail()
     }
 
+    // MARK: - Apple Sign In
+
+    func signInWithApple(idToken: String, fullName: String?, role: UserRole) async throws -> SessionUser {
+        let body = AppleSignInRequest(
+            id_token: idToken,
+            full_name: fullName,
+            role: role == .chef ? "provider" : "customer"
+        )
+        let authData: APIAuthResponse = try await network.request(
+            path: "auth/apple/mobile",
+            method: "POST",
+            body: body,
+            requiresAuth: false
+        )
+        let user = SessionUser(
+            id: authData.results.id ?? "",
+            name: authData.results.name ?? fullName ?? "",
+            email: authData.results.email,
+            role: authData.results.role,
+            profileUrl: authData.results.shop?.shop_banner,
+            shopName: authData.results.shop?.shop_name
+        )
+        tokenManager.saveToken(authData.token)
+        return user
+    }
+
     // MARK: - Change Password (authenticated)
 
     func changePassword(oldPassword: String, newPassword: String, confirmPassword: String) async throws {

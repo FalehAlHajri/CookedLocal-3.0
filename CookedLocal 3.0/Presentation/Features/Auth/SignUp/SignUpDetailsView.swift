@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct SignUpDetailsView: View {
     @StateObject var viewModel: SignUpDetailsViewModel
@@ -54,6 +55,13 @@ struct SignUpDetailsView: View {
                 },
                 isLoading: viewModel.isLoading
             )
+            .padding(.horizontal, DesignTokens.Spacing.lg)
+
+            AppleSignInButton {
+                Task {
+                    await viewModel.signInWithApple()
+                }
+            }
             .padding(.horizontal, DesignTokens.Spacing.lg)
             .padding(.bottom, DesignTokens.Spacing.xxl)
         }
