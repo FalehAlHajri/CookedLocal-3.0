@@ -32,7 +32,7 @@ enum PaymentMethod: String, CaseIterable {
     }
 }
 
-enum PaymentState: Equatable {
+enum PaymentState {
     case idle
     case creatingSession
     case waitingForPayment
@@ -41,23 +41,6 @@ enum PaymentState: Equatable {
     case cancelled
     case processing
     case error(String)
-
-    static func == (lhs: PaymentState, rhs: PaymentState) -> Bool {
-        switch (lhs, rhs) {
-        case (.idle, .idle),
-             (.creatingSession, .creatingSession),
-             (.waitingForPayment, .waitingForPayment),
-             (.verifying, .verifying),
-             (.success, .success),
-             (.cancelled, .cancelled),
-             (.processing, .processing):
-            return true
-        case let (.error(a), .error(b)):
-            return a == b
-        default:
-            return false
-        }
-    }
 }
 
 extension Notification.Name {
@@ -193,7 +176,12 @@ final class PaymentViewModel: ObservableObject {
 
     @MainActor
     private func verifyPayment(sessionId: String) {
-        guard paymentState == .waitingForPayment || paymentState == .processing else { return }
+        switch paymentState {
+        case .waitingForPayment, .processing:
+            break
+        default:
+            return
+        }
         isLoading = true
         errorMessage = nil
         statusMessage = nil
