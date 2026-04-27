@@ -23,23 +23,7 @@ struct SignUpView: View {
             }
             .padding(.horizontal, DesignTokens.Spacing.lg)
 
-            // Continue with Apple
-            Button(action: {
-                // Apple Sign In
-            }) {
-                HStack(spacing: DesignTokens.Spacing.xs) {
-                    Image(systemName: "apple.logo")
-                        .font(.system(size: 18))
-                    Text("Continue with Apple")
-                        .font(.anton(DesignTokens.FontSize.body))
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, DesignTokens.Spacing.md)
-                .background(Color.primary900)
-                .cornerRadius(DesignTokens.CornerRadius.large)
-            }
-            .padding(.horizontal, DesignTokens.Spacing.lg)
+            Spacer()
 
             // OR divider
             HStack {
